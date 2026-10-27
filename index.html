@@ -844,10 +844,17 @@ function buildPdf(r){
   rule(0.3, 8);
   labelLeft("Vos données personnelles");
   y += 1;
-  for (const b of RGPD){
-    subhead(b.h, b.p.reduce((n, x) => n + heightOf(x, 9, 4.5), 0));
-    b.p.forEach(x => para(x, {size:9, lead:4.5, after:2}));
-    y += 2;
+  // Version condensée pour le PDF : mêmes informations que RGPD (app.js), sans les redites.
+  // Le texte intégral reste affiché dans l’application.
+  const PDF_RGPD = [
+    "Responsable : Maison Diaphane, 11 rue des Lices, 49100 Angers (contact@maison-diaphane.com). Données : nom, prénom, date du diagnostic, e-mail, réponses au questionnaire et votre choix concernant les communications.",
+    "Finalités : votre portrait olfactif, envoyé par e-mail ; si vous l’avez accepté, nos actualités (retirable à tout moment) ; statistiques anonymisées.",
+    "Accès : équipe de Maison Diaphane uniquement ; aucun prestataire d’e-mailing à ce jour. L’application charge une bibliothèque PDF depuis cdnjs (Cloudflare), qui reçoit votre adresse IP technique, sans donnée de diagnostic.",
+    "Conservation : diagnostics sur l’appareil de la boutique jusqu’à leur suppression, sans suppression automatique à ce jour ; exports JSON/CSV non supprimés avec l’appareil. Adresses de prospection : trois ans après le dernier contact actif, si vous recevez nos communications.",
+    "Droits : accès, rectification, effacement, limitation, portabilité, opposition, retrait du consentement. Contact : contact@maison-diaphane.com ; réclamation possible auprès de la CNIL (www.cnil.fr)."
+  ];
+  for (const x of PDF_RGPD){
+    para(x, {size:9, lead:4.5, after:2});
   }
 
   // Pied de page sur chaque page
