@@ -764,7 +764,9 @@ async function sharePdf(r){
   const f = pdfFile(r);
   if (navigator.canShare && navigator.canShare({files:[f]})){
     try {
-      await navigator.share({files:[f], title:"Mon portrait olfactif", text:"Veuillez trouver ci-joint votre profil olfactif Maison Diaphane."});
+      const salut = r.prenom ? `Bonjour ${r.prenom},` : "Bonjour,";
+      const texte = `${salut}\n\nMerci pour le temps que vous avez consacré à votre diagnostic olfactif. Vous trouverez ci-joint votre profil olfactif personnalisé, qui présente les familles et les matières qui vous correspondent.\n\nBien à vous,\nMaison Diaphane`;
+      await navigator.share({files:[f], title:"Mon portrait olfactif", text:texte});
       await markPdf(r);
       return;
     } catch(e) {
