@@ -887,11 +887,31 @@ async function restartDiagnostic(r){
 
 /* ---------- Sauvegarde JSON (iPad et Mac) ---------- */
 
-function exportBackup(){
-  const blob = new Blob([JSON.stringify(records, null, 2)], {type:"application/json"});
+async function exportBackup(){
+  const name = `sauvegarde-diagnostics-${todayISO()}.json`;
+  const content = JSON.stringify(records, null, 2);
+  if (isMacDesktop && canFs){
+    try {
+      let bdir = await kvGet("backupDir");
+      if (bdir && !(await ensurePerm(bdir, true))) bdir = null;
+      if (!bdir){
+        bdir = await showDirectoryPicker({mode:"readwrite", startIn:"documents"});
+        await kvSet("backupDir", bdir);
+      }
+      const fh = await bdir.getFileHandle(name, {create:true});
+      const w = await fh.createWritable();
+      await w.write(content);
+      await w.close();
+      alert(`Sauvegarde enregistrée dans le dossier choisi : ${name}`);
+      return;
+    } catch(e){
+      if (e.name === "AbortError") return;
+    }
+  }
+  const blob = new Blob([content], {type:"application/json"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = `sauvegarde-diagnostics-${todayISO()}.json`;
+  a.download = name;
   a.click();
 }
 
