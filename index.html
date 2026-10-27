@@ -262,7 +262,7 @@ const isMacDesktop = /Macintosh/.test(navigator.userAgent) && !isIpad;
 const isChrome = /Chrome\//.test(navigator.userAgent) && !/(Edg|OPR)\//.test(navigator.userAgent);
 const canFs = "showDirectoryPicker" in window;
 // folder : Chrome sur ordinateur (dossier choisi) ; local : iPad et autres navigateurs ; blocked : Mac hors Chrome
-const MODE = isIpad ? "local" : (isMacDesktop && !isChrome) ? "blocked" : (canFs ? "folder" : "local");
+const MODE = "local";
 
 let dir = null;
 let records = [];
@@ -942,23 +942,7 @@ function setTab(which){
   if (!form){ renderTrace(); $("#trace-detail").hidden = true; }
 }
 
-async function enterApp(){
-  show("#app");
-  $("#folder-label").textContent = MODE === "folder"
-    ? `Dossier : Documents / ${FOLDER}`
-    : "Stockage : dans ce navigateur. Exportez une sauvegarde pour la conserver ou la transférer.";
-  await loadRecords();
-  buildForm();
-  setTab("form");
-}
-
-
-$("#tab-form").onclick = () => setTab("form");
-$("#tab-trace").onclick = () => setTab("trace");
-$("#btn-csv").onclick = exportCsv;
-$("#btn-json").onclick = exportBackup;$("#file-import").onchange = e => { const f = e.target.files[0]; if (f) importBackup(f); e.target.value = ""; };
-
-$("#btn-setup").onclick = async () => {
+async function pickFolder(){
   try {
     const parent = await showDirectoryPicker({mode:"readwrite", startIn:"documents"});
     dir = await parent.getDirectoryHandle(FOLDER, {create:true});
@@ -967,7 +951,37 @@ $("#btn-setup").onclick = async () => {
   } catch(e) {
     alert("Dossier non sélectionné ou accès refusé.");
   }
-};
+}
+
+async function enterApp(){
+  show("#app");
+  $("#folder-label").textContent = MODE === "folder"
+    ? `Dossier : Documents / ${FOLDER}`
+    : "Stockage : dans ce navigateur. Exportez une sauvegarde pour la conserver ou la transférer.";
+  let erreur = null;
+  try { await loadRecords(); } catch(e) { erreur = e; records = []; }
+  buildForm();
+  setTab("form");
+  if (erreur && MODE === "folder"){
+    $("#folder-label").textContent = "Dossier non accessible";
+    const box = $("#result");
+    box.hidden = false;
+    box.innerHTML = `
+      <strong>Le dossier « ${esc(FOLDER)} » n'est pas accessible.</strong><br>
+      Cliquez sur le bouton ci-dessous, puis sélectionnez le dossier <strong>Documents</strong>.
+      Si « ${esc(FOLDER)} » n'existe pas, il sera créé.
+      <div class="actions"><button class="primary btn" id="repick">Choisir le dossier</button></div>`;
+    $("#repick").onclick = pickFolder;
+  }
+}
+
+
+$("#tab-form").onclick = () => setTab("form");
+$("#tab-trace").onclick = () => setTab("trace");
+$("#btn-csv").onclick = exportCsv;
+$("#btn-json").onclick = exportBackup;$("#file-import").onchange = e => { const f = e.target.files[0]; if (f) importBackup(f); e.target.value = ""; };
+
+$("#btn-setup").onclick = pickFolder;
 
 $("#btn-reauth").onclick = async () => {
   if (await ensurePerm(dir, true)) enterApp();
