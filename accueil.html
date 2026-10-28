@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Bienvenue chez Maison Diaphane</title>
+<link rel="icon" href="icone-512.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="accueil-manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Maison Diaphane">
 <meta name="description" content="Bienvenue chez Maison Diaphane. Un diagnostic olfactif pour découvrir votre profil.">
 <style>
   :root { --ink:#1d1b19; --muted:#6b6660; --line:#dcd7cf; --bg:#faf8f5; --soft:#f1efeb; --accent:#1d1b19; }
@@ -16,7 +21,7 @@
   header { text-align:center; padding:36px 0 18px; }
   .brand { font-size:14px; letter-spacing:.3em; text-transform:uppercase; margin:0; font-weight:500; }
   .brand small { display:block; font-size:11px; letter-spacing:.2em; color:var(--muted); margin-top:4px; }
-  .hero { width:100%; aspect-ratio:4/3; object-fit:cover; display:block; border-radius:4px; margin:18px 0 0; }
+  .hero { width:min(336px,100%); height:auto; aspect-ratio:4/3; object-fit:cover; display:block; border-radius:4px; margin:18px auto 0; }
   main { padding:32px 0 8px; text-align:center; }
   h1 { font-family:Georgia, "Times New Roman", serif; font-weight:400; font-size:34px; line-height:1.2; margin:0 0 18px; }
   .accroche { font-family:Georgia, "Times New Roman", serif; font-style:italic; font-size:21px; line-height:1.5; color:var(--ink); margin:0 auto 22px; max-width:560px; }
@@ -24,10 +29,10 @@
   .btn { display:inline-block; margin:26px 0 12px; background:var(--accent); color:var(--bg); text-decoration:none; padding:15px 26px; border-radius:6px; font-size:15px; letter-spacing:.04em; }
   .btn:focus-visible { outline:2px solid var(--muted); outline-offset:3px; }
   .petit { font-size:13px; color:var(--muted); margin:0 auto 36px; max-width:520px; }
-  .gallery { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:8px 0 40px; }
-  .gallery img { width:100%; height:auto; aspect-ratio:4/3; object-fit:cover; border-radius:4px; display:block; }
+  .gallery { display:flex; justify-content:center; flex-wrap:wrap; gap:8px; margin:8px 0 40px; }
+  .gallery img { width:min(336px,100%); height:auto; aspect-ratio:4/3; object-fit:cover; border-radius:4px; display:block; }
   footer { border-top:1px solid var(--line); text-align:center; color:var(--muted); font-size:13px; padding:22px 0 36px; }
-  @media (max-width:600px) { h1 { font-size:28px; } .accroche { font-size:19px; } .gallery { grid-template-columns:1fr; } }
+  @media (max-width:600px) { h1 { font-size:28px; } .accroche { font-size:19px; } }
 </style>
 </head>
 <body>
@@ -48,6 +53,7 @@
 
     <div class="gallery">
       <img src="img/accueil-boutique-2.jpg" alt="Un présentoir de la boutique Maison Diaphane, éclairé par des suspensions" width="1448" height="1086" loading="lazy">
+      <img src="img/accueil-boutique-3.jpg" alt="Les étagères éclairées de la boutique Maison Diaphane" width="1448" height="1086" loading="lazy">
     </div>
   </main>
 
