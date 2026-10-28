@@ -1,13 +1,21 @@
 {
-  "name": "Bienvenue chez Maison Diaphane",
-  "short_name": "Maison Diaphane",
+  "name": "Diagnostic Olfactif Maison Diaphane",
+  "short_name": "Diagnostic Olfactif",
   "start_url": "./accueil.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#faf8f5",
   "theme_color": "#faf8f5",
   "icons": [
-    { "src": "icone-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+    {
+      "src": "icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
   ]
 }
