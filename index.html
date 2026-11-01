@@ -903,6 +903,26 @@ function buildPdf(r){
     y += 2;
   }
 
+  // Vos réponses aux questions ouvertes (toutes les questions, réponse ou « Non renseignée »)
+  {
+    const ouv = r.ouvertes || {};
+    rule(0.3, 8);
+    labelLeft("Vos réponses");
+    y += 2;
+    [...QUESTIONS_I, ...QUESTIONS_III].forEach(q => {
+      const rep = String(ouv[q.id] || "").trim();
+      setF("helvetica", "bold", 9, INK);
+      const ql = doc.splitTextToSize(t(q.num + "  " + q.q), maxW);
+      ensure(ql.length * 4.6 + 2);
+      ql.forEach(l => { doc.text(l, M, y); y += 4.6; });
+      setF("helvetica", "normal", 9, rep ? INK : MUTED);
+      const al = doc.splitTextToSize(t(rep || "Non renseignée"), maxW);
+      ensure(al.length * 4.6 + 3);
+      al.forEach(l => { doc.text(l, M, y); y += 4.6; });
+      y += 2.5;
+    });
+  }
+
   // Mentions données personnelles : tout en bas de la dernière page, petit mais lisible.
   const PDF_RGPD = [
     "Responsable : Maison Diaphane, 11 rue des Lices, 49100 Angers, contact@maison-diaphane.com. Données : nom, prénom, date du diagnostic, e-mail, réponses, choix de communications. Finalités : envoi de votre portrait ; actualités si vous l'avez accepté (retrait possible à tout moment) ; statistiques anonymisées. Conservation : sur l'appareil de la boutique jusqu'à suppression. Droits : accès, rectification, effacement, limitation, portabilité, opposition, retrait du consentement. Contact et réclamation : contact@maison-diaphane.com, ou la CNIL (www.cnil.fr)."
