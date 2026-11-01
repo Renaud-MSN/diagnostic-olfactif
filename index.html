@@ -59,6 +59,10 @@
 /* Portrait client, résumé interne et formulaire (mandat) */
 .portrait{line-height:1.55;text-align:left}
 .portrait .intro{font-size:1.05em}
+.portrait .greet{text-align:center;margin:6px 0 22px;font-family:Georgia,"Times New Roman",serif;color:#6b4f3a}
+.portrait .greet .gr-hi{display:block;font-size:1.45em;line-height:1.3}
+.portrait .greet .gr-sub{display:block;font-style:italic;font-size:1.05em;margin-top:4px}
+.portrait .greet::after{content:"";display:block;width:64px;height:1px;background:#b28a51;margin:14px auto 0}
 .portrait .kicker{font-size:.72em;text-transform:uppercase;letter-spacing:.12em;color:#7a716a;margin:1em 0 0}
 .portrait h2{font-family:Georgia,"Times New Roman",serif;font-size:1.7em;margin:.15em 0 .4em}
 .portrait h3{font-size:1.02em;margin:1.3em 0 .25em;letter-spacing:.02em}
@@ -590,7 +594,7 @@ function portrait(r){
 function portraitHtml(r){
   const P = portrait(r);
   return `<div class="portrait">
-    <p class="intro">${esc(P.intro)}</p>
+    <p class="greet"><span class="gr-hi">Bonjour ${esc(r.prenom)},</span><span class="gr-sub">voici votre portrait olfactif.</span></p>
     <section class="pfam">
       <img class="fam-img-res" src="img/famille-${slug(P.famille.titre)}.jpg" alt="Illustration : ${esc(P.famille.titre)}" width="480" height="480" decoding="async">
       <p class="kicker">Famille olfactive dominante</p>
@@ -792,12 +796,10 @@ function showResult(r){
     Famille dominante : <strong>${esc(p.dominante)}</strong><br>
     Adresse e-mail du client : <strong>${esc(r.mail)}</strong>
     <div class="actions">
-      <button class="primary btn" id="mail-now">Envoyer par mail (PDF)</button>
+      <button class="primary btn" id="mail-now">Envoyer ce PDF</button>
     </div>
-    <p class="wiz-back-p"><button class="link-btn" id="new">Nouveau diagnostic</button></p>
     ${portraitHtml(r)}`;
   $("#mail-now").onclick = () => sharePdf(r);
-  $("#new").onclick = () => { box.hidden = true; $("#f").hidden = false; buildForm(); };
 }
 
 /* ---------- PDF client (jsPDF) ---------- */
