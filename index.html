@@ -791,12 +791,10 @@ function showResult(r){
     <strong>Diagnostic enregistré</strong> : ${esc(r.prenom)} ${esc(r.nom)}, ${esc(fmtDate(r.date))}<br>
     Famille dominante : <strong>${esc(p.dominante)}</strong><br>
     Adresse e-mail du client : <strong>${esc(r.mail)}</strong>
-    ${p.signaux.length ? " — <em>première orientation, le résumé interne (onglet Trace) précise les points à affiner.</em>" : ""}
     <div class="actions">
       <button class="primary btn" id="mail-now">Envoyer par mail (PDF)</button>
     </div>
     <p class="wiz-back-p"><button class="link-btn" id="new">Nouveau diagnostic</button></p>
-    <h3 class="sub">Portrait du client</h3>
     ${portraitHtml(r)}`;
   $("#mail-now").onclick = () => sharePdf(r);
   $("#new").onclick = () => { box.hidden = true; $("#f").hidden = false; buildForm(); };
@@ -903,22 +901,23 @@ function buildPdf(r){
     y += 2;
   }
 
-  // Information sur les données personnelles
-  rule(0.3, 8);
-  labelLeft("Vos données personnelles");
-  y += 1;
-  // Version condensée pour le PDF : mêmes informations que RGPD (app.js), sans les redites.
-  // Le texte intégral reste affiché dans l’application.
+  // Mentions données personnelles : tout en bas de la dernière page, petit mais lisible.
   const PDF_RGPD = [
-    "Responsable : Maison Diaphane, 11 rue des Lices, 49100 Angers (contact@maison-diaphane.com). Données : nom, prénom, date du diagnostic, e-mail, réponses au questionnaire et votre choix concernant les communications.",
-    "Finalités : votre portrait olfactif, envoyé par e-mail ; si vous l’avez accepté, nos actualités (retirable à tout moment) ; statistiques anonymisées.",
-    "Accès : équipe de Maison Diaphane uniquement ; aucun prestataire d’e-mailing à ce jour. L’application charge une bibliothèque PDF depuis cdnjs (Cloudflare), qui reçoit votre adresse IP technique, sans donnée de diagnostic.",
-    "Conservation : diagnostics sur l’appareil de la boutique jusqu’à leur suppression, sans suppression automatique à ce jour ; exports JSON/CSV non supprimés avec l’appareil. Adresses de prospection : trois ans après le dernier contact actif, si vous recevez nos communications.",
-    "Droits : accès, rectification, effacement, limitation, portabilité, opposition, retrait du consentement. Contact : contact@maison-diaphane.com ; réclamation possible auprès de la CNIL (www.cnil.fr)."
+    "Responsable : Maison Diaphane, 11 rue des Lices, 49100 Angers, contact@maison-diaphane.com. Données : nom, prénom, date du diagnostic, e-mail, réponses, choix de communications. Finalités : envoi de votre portrait ; actualités si vous l'avez accepté (retrait possible à tout moment) ; statistiques anonymisées. Conservation : sur l'appareil de la boutique jusqu'à suppression. Droits : accès, rectification, effacement, limitation, portabilité, opposition, retrait du consentement. Contact et réclamation : contact@maison-diaphane.com, ou la CNIL (www.cnil.fr)."
   ];
-  for (const x of PDF_RGPD){
-    para(x, {size:9, lead:4.5, after:2});
-  }
+  const RGPD_SIZE = 6.5, RGPD_LEAD = 3.1, FOOT_LINE = 282;
+  setF("helvetica", "bold", RGPD_SIZE, INK);
+  const rgpdBlock = [{txt:"VOS DONNÉES PERSONNELLES", bold:true}];
+  setF("helvetica", "normal", RGPD_SIZE, INK);
+  PDF_RGPD.forEach(x => doc.splitTextToSize(t(x), maxW).forEach(l => rgpdBlock.push({txt:l, bold:false})));
+  const rgpdH = rgpdBlock.length * RGPD_LEAD + 1;
+  const rgpdTop = FOOT_LINE - 4 - rgpdH;
+  if (y > rgpdTop - 4){ doc.addPage(); drawWm(); }
+  let by = FOOT_LINE - 4 - rgpdH + RGPD_LEAD;
+  rgpdBlock.forEach(line => {
+    setF("helvetica", line.bold ? "bold" : "normal", RGPD_SIZE, INK);
+    doc.text(line.txt, M, by); by += RGPD_LEAD;
+  });
 
   // Pied de page sur chaque page
   const n = doc.getNumberOfPages();
