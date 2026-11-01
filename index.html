@@ -46,9 +46,11 @@
   .detail { font-size:14px; background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px; margin-top:14px; }
   .detail dt { font-weight:600; margin-top:8px; }
   .detail dd { margin:2px 0 0 0; white-space:pre-wrap; }
-  #preview { position:fixed; inset:0; background:#fff; z-index:50; display:flex; flex-direction:column; }
-  #preview .bar { display:flex; gap:8px; padding:10px; border-bottom:1px solid var(--line); flex-wrap:wrap; align-items:center; }
-  #preview iframe { flex:1; border:0; width:100%; min-height:0; }
+  #preview { position:fixed; inset:0; background:#fff; z-index:50; display:flex; flex-direction:column; overflow:hidden; color-scheme:light; --ink:#3a2f26; --muted:#7a6b5d; --bg:#fff; --line:#e4d8c8; --accent:#6b4f3a; color:#3a2f26; }
+  #preview .bar { display:flex; gap:8px; padding:10px 12px; border-bottom:1px solid var(--line); flex-wrap:wrap; align-items:center; background:#fff; flex:0 0 auto; }
+  #preview .pv-body { flex:1 1 auto; min-height:0; width:100%; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; padding:18px 16px 48px; box-sizing:border-box; overflow-wrap:anywhere; background:#fff; }
+  #preview .pv-body .portrait { max-width:640px; margin:0 auto; font-size:17px; }
+  #preview .pv-body img { max-width:100%; height:auto; }
   #pdf-zone { display:none; }
   /* Filigrane : photo de la boutique, voilée à 91 % par la couche claire (visibilité ~9 %) */
   body::before { content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
@@ -146,6 +148,15 @@ details.rgpd summary { color:var(--accent); }
 .wiz-btns { display:flex; justify-content:space-between; gap:10px; }
 .wiz-btns button { min-width:130px; }
 nav.steps { display:none !important; }
+
+.wiz-end { margin:22px 0 0; padding:26px 20px 22px; background:var(--paper); border:1px solid var(--line); border-radius:18px; box-shadow:0 8px 24px rgba(80,60,40,.05); text-align:center; }
+.wiz-end h2 { font-family:Georgia,"Times New Roman",serif; font-weight:400; color:var(--accent); font-size:24px; line-height:1.3; margin:0 0 12px; }
+.wiz-end p { color:var(--muted); margin:0 0 20px; }
+.wiz-big { width:100%; padding:16px 20px; font-size:18px; }
+.wiz-back-p { margin:18px 0 0 !important; }
+.link-btn { background:none; border:0; color:var(--accent); text-decoration:underline; text-underline-offset:3px; font-size:15px; cursor:pointer; font-family:inherit; padding:6px; }
+.bottom-info #reset { margin:6px 0 16px; }
+.bottom-info > p.sub { margin:0 0 16px; font-size:14px; }
 </style>
 </head>
 <body>
@@ -585,10 +596,10 @@ function portraitHtml(r){
       <p class="kicker">Famille olfactive dominante</p>
       <h2>${esc(P.famille.titre)}</h2>
       <p>${esc(P.famille.definition)}</p>
-      <h4>Ce que vous vivrez avec ce profil</h4>
-      <p>${esc(P.famille.vivre)}</p>
       <h4>Ce qui vous ressemble</h4>
       <p>${esc(P.famille.clientele)}</p>
+      <h4>Au quotidien</h4>
+      <p>${esc(P.famille.vivre)}</p>
     </section>
     ${P.blocs.map(b => `<section class="pbloc"><h3>${esc(b.h)}</h3>
       ${(b.p || []).map(x => `<p>${esc(x)}</p>`).join("")}
@@ -782,21 +793,12 @@ function showResult(r){
     Adresse e-mail du client : <strong>${esc(r.mail)}</strong>
     ${p.signaux.length ? " — <em>première orientation, le résumé interne (onglet Trace) précise les points à affiner.</em>" : ""}
     <div class="actions">
-      <button class="btn ghost" id="pv-now">Aperçu du PDF</button>
       <button class="primary btn" id="mail-now">Envoyer par mail (PDF)</button>
-      <button class="btn ghost" id="dl-now">Télécharger le PDF</button>
-      <button class="btn ghost" id="copy-mail">Copier l’adresse e-mail</button>
-      <button class="btn ghost" id="new">Nouveau diagnostic</button>
     </div>
+    <p class="wiz-back-p"><button class="link-btn" id="new">Nouveau diagnostic</button></p>
     <h3 class="sub">Portrait du client</h3>
     ${portraitHtml(r)}`;
-  $("#pv-now").onclick = () => previewPdf(r);
   $("#mail-now").onclick = () => sharePdf(r);
-  $("#dl-now").onclick = () => downloadPdf(r);
-  $("#copy-mail").onclick = async () => {
-    try { await navigator.clipboard.writeText(r.mail); alert("Adresse e-mail copiée."); }
-    catch(e) { alert("Copie impossible. Adresse à saisir : " + r.mail); }
-  };
   $("#new").onclick = () => { box.hidden = true; $("#f").hidden = false; buildForm(); };
 }
 
@@ -886,10 +888,10 @@ function buildPdf(r){
   doc.text(t(P.famille.titre), M, y); y += 9;
   rule(0.3, 7);
   para(P.famille.definition, {after: 4});
-  subhead("Ce que vous vivrez avec ce profil", heightOf(P.famille.vivre, 10, 5));
-  para(P.famille.vivre, {after: 4});
   subhead("Ce qui vous ressemble", heightOf(P.famille.clientele, 10, 5));
-  para(P.famille.clientele, {after: 6});
+  para(P.famille.clientele, {after: 4});
+  subhead("Au quotidien", heightOf(P.famille.vivre, 10, 5));
+  para(P.famille.vivre, {after: 6});
 
   // Blocs personnalisés
   for (const b of P.blocs){
@@ -974,31 +976,23 @@ async function sharePdf(r){
   await downloadPdf(r);
 }
 
-// Aperçu plein écran du PDF, pour le relire avec le client avant tout envoi.
+// Aperçu plein écran, pour relire le portrait avec le client avant tout envoi.
+// Même contenu que le PDF (même source de texte), mais en mise en page souple :
+// pas de lecteur PDF intégré (instable sur iPhone/iPad), donc rien ne bouge ni ne déborde.
 function previewPdf(r){
   const url = URL.createObjectURL(pdfFile(r));
   const ov = document.createElement("div");
   ov.id = "preview";
   ov.innerHTML = `<div class="bar">
       <button class="btn ghost" id="pv-close">Fermer</button>
-      <button class="btn ghost" id="pv-dl">Télécharger</button>
       <button class="primary btn" id="pv-mail">Envoyer par mail</button>
-      <button class="btn ghost" id="pv-restart">Recommencer</button>
-      <button class="btn ghost" id="pv-del" style="color:#a33;border-color:#a33">Supprimer</button>
       <span style="font-size:13px;color:#6b6660">Vérifiez ce portrait avec le client avant d'envoyer.</span>
     </div>
-    <iframe src="${url}" title="Aperçu du PDF"></iframe>`;
+    <div class="pv-body">${portraitHtml(r)}</div>`;
   document.body.appendChild(ov);
-  const close = () => { ov.remove(); URL.revokeObjectURL(url); };
+  const close = () => { ov.remove(); setTimeout(() => URL.revokeObjectURL(url), 60000); };
   ov.querySelector("#pv-close").onclick = close;
-  ov.querySelector("#pv-dl").onclick = () => downloadPdf(r);
   ov.querySelector("#pv-mail").onclick = () => { close(); sharePdf(r); };
-  ov.querySelector("#pv-restart").onclick = () => { close(); restartDiagnostic(r); };
-  ov.querySelector("#pv-del").onclick = async () => {
-    close();
-    await deleteRecord(r);
-    if (!records.some(x => x.id === r.id)){ $("#result").hidden = true; setTab("trace"); }
-  };
 }
 
 /* ---------- Trace et résumé interne ---------- */
@@ -1280,6 +1274,24 @@ function setupWizard(f){
   f.appendChild(wizNav);
   if (navSteps) navSteps.hidden = true;
 
+  // Page de fin : un seul bloc clair pour le client
+  const oldEnd = f.querySelector("#wiz-end");
+  if (oldEnd) oldEnd.remove();
+  const endBox = document.createElement("div");
+  endBox.id = "wiz-end";
+  endBox.className = "wiz-end";
+  endBox.innerHTML = '<h2>Merci, vos réponses sont complètes.</h2>'
+    + '<p>Cliquez sur le bouton ci-dessous pour enregistrer votre diagnostic.</p>'
+    + '<button type="submit" class="primary btn wiz-big" id="wiz-submit">Enregistrer mon diagnostic</button>'
+    + '<p class="wiz-back-p"><button type="button" class="link-btn" id="wiz-back">Revenir modifier mes réponses</button></p>';
+  if (info) f.insertBefore(endBox, info); else f.appendChild(endBox);
+
+  // Mentions et action « Vider » déplacées en bas de page, sous la page de fin
+  const resetBtn = f.querySelector("#reset");
+  if (info && resetBtn) info.prepend(resetBtn);
+  if (info && sub) info.prepend(sub);
+  if (actions) actions.remove();
+
   let i = 0;
   const q = sel => wizNav.querySelector(sel);
 
@@ -1290,11 +1302,11 @@ function setupWizard(f){
     topKids.forEach(c => c.hidden = false);
     [card, ...secs].forEach(x => [...x.children].forEach(c => c.hidden = false));
     topKids.forEach(c => c.hidden = true);
-    wizNav.hidden = false;
+    endBox.hidden = !isFinal;
+    wizNav.hidden = isFinal;
     if (isFinal){
-      [sub, actions, info].forEach(c => { if (c) c.hidden = false; });
-      q(".wiz-kicker").textContent = "Enregistrement du diagnostic";
-      q("#wiz-next").hidden = true;
+      info.hidden = false;
+      if (sub) sub.hidden = false;
     } else {
       const s = steps[i];
       s.top.hidden = false;
@@ -1323,6 +1335,7 @@ function setupWizard(f){
   function suivant(){ if (valide()) apply(i + 1); }
   function precedent(){ apply(i - 1); }
 
+  endBox.querySelector("#wiz-back").onclick = () => apply(total - 1);
   q("#wiz-next").onclick = suivant;
   q("#wiz-prev").onclick = precedent;
   f.onkeydown = e => {
